@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Diagnosa | Sistem Pakar Diagnosa Tidur</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <meta name="description" content="Frontend demo Sistem Pakar Diagnosa Gangguan Tidur (Home, Diagnosa, Jenis Gangguan, Login Admin)." />
+
+  <script>
+    // Frontend disajikan oleh FastAPI (origin sama), jadi API_BASE kosong.
+    window.API_BASE = "";
+  </script>
+</head>
+
+
+<body class="min-h-screen bg-slate-50 text-slate-900">
+  <header class="sticky top-0 z-40 border-b bg-white/80 backdrop-blur">
+    <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
+      <a href="index.html" class="flex items-center gap-2 font-semibold">
+        <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-white">SP</span>
+        <span class="leading-tight">
+          <span class="block text-sm text-slate-500">Sistem Pakar</span>
+          <span class="block">Diagnosa Tidur</span>
+        </span>
+      </a>
+
+      <nav class="hidden items-center gap-1 md:flex">
+        <a data-nav="index.html" href="index.html" class="navlink rounded-xl px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900">Home</a>
+        <a data-nav="diagnosa.html" href="diagnosa.html" class="navlink rounded-xl px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900">Diagnosa</a>
+        <a data-nav="jenis-gangguan.html" href="jenis-gangguan.html" class="navlink rounded-xl px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900">Jenis Gangguan</a>
+        <a data-nav="login.html" href="login.html" class="navlink rounded-xl px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900">Login</a>
+      </nav>
+
+      <button id="btnMenu" class="md:hidden inline-flex items-center justify-center rounded-xl border px-3 py-2 text-sm font-medium hover:bg-slate-100">
+        Menu
+      </button>
+    </div>
+
+    <div id="mobileMenu" class="md:hidden hidden border-t bg-white">
+      <div class="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-3">
+        <a data-nav="index.html" href="index.html" class="navlink rounded-xl px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">Home</a>
+        <a data-nav="diagnosa.html" href="diagnosa.html" class="navlink rounded-xl px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">Diagnosa</a>
+        <a data-nav="jenis-gangguan.html" href="jenis-gangguan.html" class="navlink rounded-xl px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">Jenis Gangguan</a>
+        <a data-nav="login.html" href="login.html" class="navlink rounded-xl px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">Login</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-4xl px-4 py-10">
+    <div class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h1 class="text-xl font-bold">Diagnosa Gangguan Tidur</h1>
+          <p class="mt-1 text-sm text-slate-600">Isi biodata dulu, baru pilih penyakit yang mau dicek. Biar runtut, tidak kayak hidup.</p>
+        </div>
+        <button id="btnResetAll" class="rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold hover:bg-slate-100">Reset</button>
+      </div>
+
+      <!-- STEP 1: Biodata -->
+      <section id="stepBio" class="mt-6">
+        <h2 class="text-sm font-bold text-slate-700">1) Biodata pengguna</h2>
+        <form id="bioForm" class="mt-4 grid gap-4">
+          <div>
+            <label class="text-sm font-semibold text-slate-700">Nama</label>
+            <input id="nama" required class="mt-1 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:bg-white focus:ring-2 focus:ring-blue-500" placeholder="Nama kamu" />
+          </div>
+
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <label class="text-sm font-semibold text-slate-700">Umur</label>
+              <input id="umur" type="number" min="1" required class="mt-1 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:bg-white focus:ring-2 focus:ring-blue-500" placeholder="Contoh: 21" />
+            </div>
+            <div>
+              <label class="text-sm font-semibold text-slate-700">Jenis kelamin</label>
+              <select id="jk" required class="mt-1 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:bg-white focus:ring-2 focus:ring-blue-500">
+                <option value="">Pilih...</option>
+                <option value="Laki-laki">Laki-laki</option>
+                <option value="Perempuan">Perempuan</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="text-sm font-semibold text-slate-700">Alamat</label>
+            <textarea id="alamat" required rows="3" class="mt-1 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:bg-white focus:ring-2 focus:ring-blue-500" placeholder="Contoh: Kebumen"></textarea>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-3">
+            <button class="rounded-2xl bg-blue-600 px-5 py-3 text-sm font-bold text-white hover:bg-blue-500" type="submit">Lanjut</button>
+            <span id="bioMsg" class="hidden text-sm font-semibold text-emerald-700">Biodata tersimpan.</span>
+          </div>
+        </form>
+      </section>
+
+      <!-- STEP 2: Pilih penyakit -->
+      <section id="stepPilih" class="mt-8 hidden">
+        <h2 class="text-sm font-bold text-slate-700">2) Pilih penyakit yang mau dicek</h2>
+        <div class="mt-4 grid gap-4">
+          <div>
+            <label class="text-sm font-semibold text-slate-700">Daftar penyakit</label>
+            <select id="pilihPenyakit" class="mt-1 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:bg-white focus:ring-2 focus:ring-blue-500">
+              <option value="">Memuat...</option>
+            </select>
+            <p class="mt-2 text-xs text-slate-500">Sistem akan menanyakan gejala sesuai aturan penyakit yang kamu pilih.</p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-3">
+            <button id="btnMulaiCek" class="rounded-2xl bg-blue-600 px-5 py-3 text-sm font-bold text-white hover:bg-blue-500">Mulai cek</button>
+            <button id="btnKembaliBio" class="rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-bold hover:bg-slate-100">Kembali</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- STEP 3: Tanya gejala -->
+      <section id="stepTanya" class="mt-8 hidden">
+        <h2 class="text-sm font-bold text-slate-700">3) Pertanyaan gejala</h2>
+
+        <div class="mt-4 rounded-3xl border border-slate-200 bg-slate-50 p-5">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <div class="text-xs font-semibold text-slate-500">Kode gejala</div>
+              <div id="kodeGejala" class="mt-1 font-mono text-sm font-bold text-slate-800">-</div>
+            </div>
+            <div class="text-right">
+              <div class="text-xs font-semibold text-slate-500">Progres</div>
+              <div id="progres" class="mt-1 text-sm font-bold text-slate-800">0/0</div>
+            </div>
+          </div>
+
+          <div class="mt-4 text-base font-semibold text-slate-900" id="teksGejala">-</div>
+          <p class="mt-1 text-sm text-slate-600">Apakah kamu mengalami gejala ini?</p>
+
+          <div class="mt-5 flex flex-wrap gap-3">
+            <button id="btnYa" class="rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white hover:bg-emerald-500">Ya</button>
+            <button id="btnTidak" class="rounded-2xl bg-rose-600 px-5 py-3 text-sm font-bold text-white hover:bg-rose-500">Tidak</button>
+          </div>
+
+          <div class="mt-4">
+            <div class="text-xs font-semibold text-slate-500">Jawaban terakhir</div>
+            <div id="jawabanTerakhir" class="mt-2 grid gap-2 text-sm text-slate-700"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- STEP 4: Hasil -->
+      <section id="stepHasil" class="mt-8 hidden">
+        <h2 class="text-sm font-bold text-slate-700">Hasil diagnosa</h2>
+
+        <div class="mt-4 grid gap-4">
+          <div class="rounded-3xl border border-slate-200 bg-white p-5">
+            <div class="text-xs font-semibold text-slate-500">Biodata</div>
+            <div id="biodataRingkas" class="mt-2 text-sm text-slate-800"></div>
+          </div>
+
+          <div class="rounded-3xl border border-slate-200 bg-white p-5">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <div class="text-xs font-semibold text-slate-500">Penyakit yang dicek</div>
+                <div id="hasilNamaPenyakit" class="mt-1 text-lg font-bold text-slate-900">-</div>
+                <div id="hasilStatus" class="mt-2 inline-flex rounded-full px-3 py-1 text-xs font-bold">-</div>
+              </div>
+              <button id="btnCekLagi" class="rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold hover:bg-slate-100">Cek penyakit lain</button>
+            </div>
+
+            <div id="hasilPesan" class="mt-3 text-sm text-slate-700"></div>
+
+            <div id="blokDetail" class="mt-6 hidden">
+              <div class="grid gap-4">
+                <div class="rounded-2xl bg-slate-50 p-4">
+                  <div class="text-xs font-semibold text-slate-500">Pengertian</div>
+                  <div id="hasilPengertian" class="mt-1 text-sm text-slate-800"></div>
+                </div>
+                <div class="rounded-2xl bg-slate-50 p-4">
+                  <div class="text-xs font-semibold text-slate-500">Penyebab umum</div>
+                  <div id="hasilPenyebab" class="mt-1 text-sm text-slate-800"></div>
+                </div>
+                <div class="rounded-2xl bg-slate-50 p-4">
+                  <div class="text-xs font-semibold text-slate-500">Solusi (S01, S02, ...)</div>
+                  <ul id="hasilSolusi" class="mt-2 list-disc pl-5 text-sm text-slate-800"></ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="rounded-3xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-900">
+            Catatan: Ini skrining awal berbasis aturan (rule). Bukan pengganti diagnosis dokter.
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+<script>
+  const API = (window.API_BASE || "") + "/api";
+
+  async function api(path, opts) {
+    const res = await fetch(API + path, {
+      headers: { "Content-Type": "application/json", ...(opts?.headers||{}) },
+      ...opts
+    });
+    const data = await res.json().catch(() => ({}));
+    if(!res.ok) throw new Error(data?.detail || "Request gagal");
+    return data;
+  }
+
+  // UI helpers
+  const stepBio = document.getElementById('stepBio');
+  const stepPilih = document.getElementById('stepPilih');
+  const stepTanya = document.getElementById('stepTanya');
+  const stepHasil = document.getElementById('stepHasil');
+
+  function show(el, yes=true) { el?.classList.toggle('hidden', !yes); }
+  function only(step) {
+    show(stepBio, step==='bio');
+    show(stepPilih, step==='pilih');
+    show(stepTanya, step==='tanya');
+    show(stepHasil, step==='hasil');
+  }
+
+  // State
+  let biodata = null;
+  let sesiId = null;
+  let penyakitDipilih = null;
+  let jawaban = [];
+
+  function renderJawabanTerakhir() {
+    const box = document.getElementById('jawabanTerakhir');
+    box.innerHTML = "";
+    if(!jawaban.length) {
+      box.innerHTML = '<div class="text-xs text-slate-500">Belum ada jawaban.</div>';
+      return;
+    }
+    jawaban.slice(-6).reverse().forEach(x => {
+      const row = document.createElement('div');
+      row.className = "flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-3 py-2";
+      row.innerHTML = `<span class="font-mono text-xs text-slate-500">${x.kode}</span>
+                       <span class="${x.nilai ? 'text-emerald-700' : 'text-rose-700'} font-bold">${x.nilai ? 'Ya' : 'Tidak'}</span>`;
+      box.appendChild(row);
+    });
+  }
+
+  async function muatPenyakit() {
+    const sel = document.getElementById('pilihPenyakit');
+    const list = await api('/penyakit', { method:'GET' });
+    sel.innerHTML = '<option value="">Pilih penyakit...</option>' + list.map(p => `<option value="${p.kode}">${p.nama} (${p.kode})</option>`).join('');
+  }
+
+  function setPertanyaan(q, prog) {
+    document.getElementById('kodeGejala').textContent = q?.kode_gejala || '-';
+    document.getElementById('teksGejala').textContent = q?.teks || '-';
+    document.getElementById('progres').textContent = prog ? `${prog.ditanya}/${prog.total}` : '0/0';
+  }
+
+  // Step 1 submit
+  document.getElementById('bioForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const nama = document.getElementById('nama').value.trim();
+    const umur = parseInt(document.getElementById('umur').value, 10);
+    const jk = document.getElementById('jk').value;
+    const alamat = document.getElementById('alamat').value.trim();
+    if(!nama || !umur || !jk || !alamat) return;
+
+    biodata = { nama, umur, jk, alamat };
+    document.getElementById('bioMsg').classList.remove('hidden');
+
+    // lanjut ke pilih penyakit
+    await muatPenyakit();
+    only('pilih');
+  });
+
+  // Kembali ke bio
+  document.getElementById('btnKembaliBio')?.addEventListener('click', () => {
+    only('bio');
+  });
+
+  // Mulai cek
+  document.getElementById('btnMulaiCek')?.addEventListener('click', async () => {
+    const kode = document.getElementById('pilihPenyakit').value;
+    if(!kode) return alert('Pilih penyakit dulu.');
+
+    penyakitDipilih = kode;
+    jawaban = [];
+    renderJawabanTerakhir();
+
+    try {
+      const out = await api('/diagnosa/mulai', {
+        method:'POST',
+        body: JSON.stringify({ ...biodata, kode_penyakit: kode })
+      });
+      sesiId = out.sesi_id;
+      setPertanyaan(out.pertanyaan, out.progres);
+      only('tanya');
+    } catch(err) {
+      alert('Gagal memulai diagnosa: ' + err.message);
+    }
+  });
+
+  async function jawab(nilai) {
+    const kode_gejala = document.getElementById('kodeGejala').textContent;
+    if(!sesiId || !kode_gejala || kode_gejala === '-') return;
+
+    jawaban.push({ kode: kode_gejala, nilai: !!nilai });
+    renderJawabanTerakhir();
+
+    const out = await api('/diagnosa/jawab', {
+      method:'POST',
+      body: JSON.stringify({
+        sesi_id: sesiId,
+        kode_gejala,
+        jawaban: !!nilai
+      })
+    });
+
+    if(out.status === 'tanya') {
+      setPertanyaan(out.pertanyaan, out.progres);
+      return;
+    }
+
+    // selesai / tidak_terpenuhi
+    renderHasil(out);
+    only('hasil');
+  }
+
+  document.getElementById('btnYa')?.addEventListener('click', () => jawab(true));
+  document.getElementById('btnTidak')?.addEventListener('click', () => jawab(false));
+
+  function renderHasil(out) {
+    const bd = biodata || out.biodata;
+    document.getElementById('biodataRingkas').innerHTML = `
+      <div><span class="font-semibold">Nama:</span> ${bd?.nama || '-'}</div>
+      <div><span class="font-semibold">Umur:</span> ${bd?.umur ?? '-'}</div>
+      <div><span class="font-semibold">Jenis kelamin:</span> ${bd?.jk || '-'}</div>
+      <div><span class="font-semibold">Alamat:</span> ${bd?.alamat || '-'}</div>
+    `;
+
+    document.getElementById('hasilNamaPenyakit').textContent = out.penyakit?.nama ? `${out.penyakit.nama} (${out.penyakit.kode})` : (penyakitDipilih || '-');
+
+    const badge = document.getElementById('hasilStatus');
+    const pesan = document.getElementById('hasilPesan');
+    const blokDetail = document.getElementById('blokDetail');
+
+    pesan.textContent = out.pesan || '';
+
+    if(out.status === 'selesai') {
+      badge.textContent = "TERDETEKSI";
+      badge.className = "mt-2 inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-800";
+      show(blokDetail, true);
+    } else {
+      badge.textContent = "TIDAK TERDETEKSI";
+      badge.className = "mt-2 inline-flex rounded-full bg-rose-100 px-3 py-1 text-xs font-bold text-rose-800";
+      // Detail masih boleh ditampilkan biar user tahu konteks penyakit yg dicek
+      show(blokDetail, true);
+    }
+
+    document.getElementById('hasilPengertian').textContent = out.penyakit?.pengertian || '-';
+    document.getElementById('hasilPenyebab').textContent = out.penyakit?.penyebab || '-';
+
+    const ul = document.getElementById('hasilSolusi');
+    ul.innerHTML = "";
+    (out.solusi || []).forEach(s => {
+      const li = document.createElement('li');
+      li.textContent = `${s.kode}: ${s.deskripsi}`;
+      ul.appendChild(li);
+    });
+    if(!(out.solusi || []).length) {
+      const li = document.createElement('li');
+      li.textContent = "Tidak ada data solusi.";
+      ul.appendChild(li);
+    }
+  }
+
+  // cek lagi
+  document.getElementById('btnCekLagi')?.addEventListener('click', async () => {
+    sesiId = null;
+    penyakitDipilih = null;
+    jawaban = [];
+    renderJawabanTerakhir();
+    await muatPenyakit();
+    only('pilih');
+  });
+
+  // reset all
+  document.getElementById('btnResetAll')?.addEventListener('click', async () => {
+    biodata = null;
+    sesiId = null;
+    penyakitDipilih = null;
+    jawaban = [];
+    document.getElementById('bioForm').reset();
+    document.getElementById('bioMsg').classList.add('hidden');
+    renderJawabanTerakhir();
+    only('bio');
+  });
+
+  // initial
+  only('bio');
+</script>
+
+</body>
+
+</html>
