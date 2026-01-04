@@ -1,7 +1,5 @@
 # Sistem Pakar Diagnosa Gangguan Tidur (FastAPI + MySQL Laragon)
 
-Kamu minta nama tabelnya "Indonesia banget". Jadi iya: penyakit, gejala, aturan, solusi, diagnosa. Hidup jadi tenang.
-
 ## 1) Setup Database (Laragon)
 1. Jalankan Laragon (Start All).
 2. Buat database: `sistem_pakar_tidur`
@@ -49,6 +47,5 @@ Buka:
    - Pengertian, penyebab, solusi (S01, S02, dst)
 5. Riwayat otomatis masuk `riwayat_diagnosa`.
 
-Kalimat saat tidak memenuhi:
-> "Berdasarkan jawaban kamu, gejala belum cukup untuk menyimpulkan penyakit yang dipilih. Sistem ini hanya memeriksa penyakit yang ada di basis pengetahuan. Kalau keluhan kamu mengganggu aktivitas atau makin berat, sebaiknya konsultasi tenaga kesehatan."
+
 
