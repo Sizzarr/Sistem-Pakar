@@ -1,0 +1,142 @@
+
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login | Sistem Pakar Diagnosa Tidur</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <meta name="description" content="Frontend demo Sistem Pakar Diagnosa Gangguan Tidur (Home, Diagnosa, Jenis Gangguan, Login Admin)." />
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-800">
+
+  <header class="sticky top-0 z-40 border-b bg-white/80 backdrop-blur">
+    <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
+      <a href="index.html" class="flex items-center gap-2 font-semibold">
+        <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-white">SP</span>
+        <span class="leading-tight">
+          <span class="block text-sm text-slate-500">Sistem Pakar</span>
+          <span class="block">Diagnosa Tidur</span>
+        </span>
+      </a>
+
+      <nav class="hidden items-center gap-1 md:flex">
+        <a data-nav="index.html" href="index.html" class="navlink rounded-xl px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900">Home</a>
+        <a data-nav="diagnosa.html" href="diagnosa.html" class="navlink rounded-xl px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900">Diagnosa</a>
+        <a data-nav="jenis-gangguan.html" href="jenis-gangguan.html" class="navlink rounded-xl px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900">Jenis Gangguan</a>
+        <a data-nav="login.html" href="login.html" class="navlink rounded-xl px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900">Login</a>
+      </nav>
+
+      <button id="btnMenu" class="md:hidden inline-flex items-center justify-center rounded-xl border px-3 py-2 text-sm font-medium hover:bg-slate-100">
+        Menu
+      </button>
+    </div>
+
+    <div id="mobileMenu" class="md:hidden hidden border-t bg-white">
+      <div class="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-3">
+        <a data-nav="index.html" href="index.html" class="navlink rounded-xl px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">Home</a>
+        <a data-nav="diagnosa.html" href="diagnosa.html" class="navlink rounded-xl px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">Diagnosa</a>
+        <a data-nav="jenis-gangguan.html" href="jenis-gangguan.html" class="navlink rounded-xl px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">Jenis Gangguan</a>
+        <a data-nav="login.html" href="login.html" class="navlink rounded-xl px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">Login</a>
+      </div>
+    </div>
+  </header>
+
+  <script>
+    (function(){
+      const btn = document.getElementById('btnMenu');
+      const menu = document.getElementById('mobileMenu');
+      if(btn && menu){
+        btn.addEventListener('click', () => menu.classList.toggle('hidden'));
+      }
+
+      // Active nav highlight
+      const path = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
+      document.querySelectorAll('.navlink').forEach(a => {
+        const target = (a.getAttribute('data-nav') || '').toLowerCase();
+        if(target === path){
+          a.classList.add('bg-blue-600','text-white','hover:bg-blue-600','hover:text-white');
+          a.classList.remove('text-slate-600','text-slate-700');
+        }
+      });
+    })();
+  </script>
+
+  <main class="mx-auto max-w-6xl px-4">
+    <section class="py-10 md:py-14">
+      <div class="mx-auto max-w-lg rounded-2xl border bg-white p-6 shadow-sm">
+        <h1 class="text-2xl font-bold tracking-tight text-slate-900">Login Admin</h1>
+        <p class="mt-2 text-sm text-slate-600">
+          Halaman ini khusus admin untuk mengelola data: penyakit, gejala, solusi/aturan, serta melihat histori.
+          
+        </p>
+
+        <form id="loginForm" class="mt-6 space-y-4">
+          <div>
+            <label class="text-sm font-medium text-slate-700">Username</label>
+            <input id="username" type="text" required class="mt-1 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-slate-400" placeholder="admin" />
+          </div>
+          <div>
+            <label class="text-sm font-medium text-slate-700">Password</label>
+            <input id="password" type="password" required class="mt-1 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-slate-400" placeholder="admin123" />
+          </div>
+
+          <button type="submit" class="w-full rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-500">
+            Masuk
+          </button>
+
+          <p id="loginMsg" class="hidden text-sm"></p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <script>
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+
+    const msg = document.getElementById('loginMsg');
+    msg.classList.add('hidden');
+
+    try {
+      const r = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+      });
+
+      const data = await r.json();
+      if (!r.ok) {
+        msg.textContent = data.detail || "Login gagal. Cek username/password.";
+        msg.className = "mt-2 text-sm text-rose-700";
+        msg.classList.remove("hidden");
+        return;
+      }
+
+      // simpan token untuk akses /api/admin/*
+      localStorage.setItem("sp_token", data.access_token);
+
+      // masuk dashboard admin
+      location.href = "admin.html";
+
+    } catch (err) {
+      msg.textContent = "Server belum jalan / tidak bisa diakses (cek uvicorn).";
+      msg.className = "mt-2 text-sm text-rose-700";
+      msg.classList.remove("hidden");
+    }
+  });
+</script>
+
+  <footer class="mt-16 border-t bg-white">
+    <div class="mx-auto max-w-6xl px-4 py-8">
+      <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <p class="text-sm text-slate-500">© <span id="year"></span> Sistem Pakar Diagnosa Tidur</p>
+</div>
+    </div>
+    <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+  </footer>
+</body>
+</html>

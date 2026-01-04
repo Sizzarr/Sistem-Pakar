@@ -1,0 +1,680 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel Admin | Sistem Pakar Diagnosa Tidur</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <meta name="description" content="Panel admin untuk mengelola penyakit, gejala, aturan, solusi, dan histori diagnosa." />
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-800">
+
+  <div class="min-h-screen bg-slate-50">
+    <header class="border-b bg-white">
+      <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
+        <div class="flex items-center gap-3">
+          <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white font-semibold">SP</span>
+          <div>
+            <div class="text-sm font-semibold text-slate-900">Panel Admin</div>
+            <div class="text-xs text-slate-500">Kelola penyakit, gejala, aturan/solusi, dan histori</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="btnLogout" class="rounded-xl bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-500">Logout</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="mx-auto max-w-6xl px-4 py-8">
+      <!-- Guard -->
+      <div id="guard" class="hidden rounded-2xl border bg-white p-6">
+        <h1 class="text-xl font-bold text-slate-900">Akses ditolak</h1>
+        <p class="mt-2 text-sm text-slate-600">Kamu belum login. Silakan login dulu.</p>
+        <a href="login.html" class="mt-4 inline-flex items-center justify-center rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-500">Ke Login</a>
+      </div>
+
+      <!-- App -->
+      <div id="app" class="hidden">
+        <div class="grid gap-6 lg:grid-cols-[260px_1fr]">
+
+          <!-- Sidebar -->
+          <aside class="rounded-2xl border bg-white p-4">
+            <div class="text-xs font-semibold text-slate-500">Menu</div>
+            <nav class="mt-3 space-y-1">
+              <button type="button" data-tab="dashboard" class="tabBtn w-full rounded-xl px-3 py-2 text-left text-sm font-medium hover:bg-slate-100">Dashboard</button>
+              <button type="button" data-tab="penyakit" class="tabBtn w-full rounded-xl px-3 py-2 text-left text-sm font-medium hover:bg-slate-100">Penyakit</button>
+              <button type="button" data-tab="gejala" class="tabBtn w-full rounded-xl px-3 py-2 text-left text-sm font-medium hover:bg-slate-100">Gejala</button>
+              <button type="button" data-tab="aturan" class="tabBtn w-full rounded-xl px-3 py-2 text-left text-sm font-medium hover:bg-slate-100">Aturan & Solusi</button>
+              <button type="button" data-tab="histori" class="tabBtn w-full rounded-xl px-3 py-2 text-left text-sm font-medium hover:bg-slate-100">Histori Diagnosa</button>
+            </nav>
+          </aside>
+
+          <!-- Content -->
+          <section class="space-y-6">
+
+            <!-- Dashboard -->
+            <div id="tab-dashboard" class="tabPanel rounded-2xl border bg-white p-6">
+              <h2 class="text-lg font-bold text-slate-900">Dashboard</h2>
+              <div class="mt-4 grid items-stretch gap-4 md:grid-cols-3">
+                <div class="rounded-2xl border border-slate-200 p-4 h-full min-h-[96px]">
+                  <div class="text-xs font-semibold text-slate-500">Total Penyakit</div>
+                  <div id="statDiseases" class="mt-1 text-2xl font-bold">0</div>
+                </div>
+                <div class="rounded-2xl border border-slate-200 p-4 h-full min-h-[96px]">
+                  <div class="text-xs font-semibold text-slate-500">Total Gejala</div>
+                  <div id="statSymptoms" class="mt-1 text-2xl font-bold">0</div>
+                </div>
+                <div class="rounded-2xl border border-slate-200 p-4 h-full min-h-[96px]">
+                  <div class="text-xs font-semibold text-slate-500">Histori Diagnosa</div>
+                  <div id="statHistory" class="mt-1 text-2xl font-bold">0</div>
+                </div>
+              </div>
+
+              <div class="mt-6 flex flex-wrap gap-2">
+                <button id="btnExport" class="rounded-2xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500">Export JSON</button>
+                <button id="btnImport" class="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold hover:bg-slate-100">Import JSON</button>
+                <input id="importFile" type="file" accept="application/json" class="hidden" />
+                <button id="btnResetData" class="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-100">Reset (kosongkan data)</button>
+              </div>
+
+              <p class="mt-3 text-xs text-slate-500">Export/Import dipakai untuk backup aturan/solusi. Reset akan mengosongkan tabel (seed kembali pakai db_init.sql).</p>
+            </div>
+
+            <!-- Penyakit -->
+            <div id="tab-penyakit" class="tabPanel hidden rounded-2xl border bg-white p-6">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <h2 class="text-lg font-bold text-slate-900">Penyakit / Gangguan Tidur</h2>
+                <button id="btnAddDisease" class="rounded-2xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500">Tambah</button>
+              </div>
+
+              <form id="diseaseForm" class="mt-4 hidden rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <input id="d_mode" type="hidden" value="create" />
+                <div class="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label class="text-sm font-medium">Kode (P01, P02, ...)</label>
+                    <input id="d_kode" required class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="P01" />
+                  </div>
+                  <div>
+                    <label class="text-sm font-medium">Nama</label>
+                    <input id="d_nama" required class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Insomnia" />
+                  </div>
+                  <div class="md:col-span-2">
+                    <label class="text-sm font-medium">Pengertian</label>
+                    <textarea id="d_pengertian" rows="3" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Pengertian singkat..."></textarea>
+                  </div>
+                  <div class="md:col-span-2">
+                    <label class="text-sm font-medium">Penyebab (pisah dengan baris baru)</label>
+                    <textarea id="d_penyebab" rows="3" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Stres\nKecemasan\n..."></textarea>
+                  </div>
+                </div>
+                <div class="mt-4 flex gap-2">
+                  <button type="submit" class="rounded-2xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-500">Simpan</button>
+                  <button id="btnCancelDisease" type="button" class="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold hover:bg-slate-100">Batal</button>
+                </div>
+              </form>
+
+              <div class="mt-4 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+                <table class="w-full text-left text-sm">
+                  <thead class="bg-slate-50 text-xs font-semibold text-slate-600">
+                    <tr>
+                      <th class="px-4 py-3">Kode</th>
+                      <th class="px-4 py-3">Nama</th>
+                      <th class="px-4 py-3">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody id="diseaseTable" class="divide-y"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Gejala -->
+            <div id="tab-gejala" class="tabPanel hidden rounded-2xl border bg-white p-6">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <h2 class="text-lg font-bold text-slate-900">Gejala</h2>
+                <button id="btnAddSymptom" class="rounded-2xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500">Tambah</button>
+              </div>
+
+              <form id="symForm" class="mt-4 hidden rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <input id="s_mode" type="hidden" value="create" />
+                <div class="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label class="text-sm font-medium">Kode (G-01, ...)</label>
+                    <input id="s_kode" required class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="G-01" />
+                  </div>
+                  <div class="md:col-span-2">
+                    <label class="text-sm font-medium">Gejala</label>
+                    <input id="s_nama" required class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Sulit untuk tidur..." />
+                  </div>
+                </div>
+                <div class="mt-4 flex gap-2">
+                  <button type="submit" class="rounded-2xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-500">Simpan</button>
+                  <button id="btnCancelSym" type="button" class="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold hover:bg-slate-100">Batal</button>
+                </div>
+              </form>
+
+              <div class="mt-4 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+                <table class="w-full text-left text-sm">
+                  <thead class="bg-slate-50 text-xs font-semibold text-slate-600">
+                    <tr>
+                      <th class="px-4 py-3">Kode</th>
+                      <th class="px-4 py-3">Gejala</th>
+                      <th class="px-4 py-3">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody id="symTable" class="divide-y"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Aturan -->
+            <div id="tab-aturan" class="tabPanel hidden rounded-2xl border bg-white p-6">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <h2 class="text-lg font-bold text-slate-900">Aturan & Solusi</h2>
+              <button id="btnEditRules"
+                class="rounded-2xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500">
+                Edit
+              </button>
+            </div>
+
+            <p class="mt-2 text-sm text-slate-600">
+              Aturan = daftar gejala untuk membuktikan penyakit (Backward Chaining).
+              Solusi disimpan per penyakit dengan kode S01, S02, dst.
+            </p>
+
+            <!-- FORM DIPINDAH KE ATAS -->
+            <form id="rulesForm" class="mt-4 hidden rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <div class="grid gap-4 md:grid-cols-2">
+                <div>
+                  <label class="text-sm font-medium">Penyakit</label>
+                  <select id="r_penyakit" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"></select>
+                  <div class="mt-1 text-xs text-slate-500">Pilih penyakit, lalu atur gejala dan solusi.</div>
+                </div>
+
+                <div>
+                  <label class="text-sm font-medium">Gejala (pilih banyak)</label>
+                  <select id="r_gejala" multiple size="10" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"></select>
+                  <div class="mt-1 text-xs text-slate-500">Gunakan Ctrl/Shift untuk multi-select.</div>
+                </div>
+
+                <div class="md:col-span-2">
+                  <label class="text-sm font-medium">Solusi (1 baris = 1 solusi)</label>
+                  <textarea id="r_solusi" rows="5"
+                    class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
+                    placeholder="Tulis solusi per baris..."></textarea>
+                </div>
+              </div>
+
+              <div class="mt-4 flex gap-2">
+                <button type="submit"
+                  class="rounded-2xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-500">
+                  Simpan
+                </button>
+                <button id="btnCancelRules" type="button"
+                  class="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold hover:bg-slate-100">
+                  Batal
+                </button>
+              </div>
+            </form>
+
+            <!-- LIST VIEW JADI DI BAWAH -->
+            <div id="rulesView" class="mt-4 space-y-4"></div>
+          </div>
+
+
+            <!-- Histori -->
+            <div id="tab-histori" class="tabPanel hidden rounded-2xl border bg-white p-6">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <h2 class="text-lg font-bold text-slate-900">Histori Diagnosa</h2>
+              </div>
+
+              <div class="mt-4 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+                <table class="w-full text-left text-sm">
+                  <thead class="bg-slate-50 text-xs font-semibold text-slate-600">
+                    <tr>
+                      <th class="px-4 py-3">Waktu</th>
+                      <th class="px-4 py-3">Nama</th>
+                      <th class="px-4 py-3">Umur</th>
+                      <th class="px-4 py-3">JK</th>
+                      <th class="px-4 py-3">Hasil</th>
+                      <th class="px-4 py-3">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="historyTable" class="divide-y"></tbody>
+                </table>
+              </div>
+
+              <p class="mt-3 text-xs text-slate-500">Histori dibuat saat proses diagnosa selesai.</p>
+            </div>
+
+          </section>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    // -----------------
+    // Guard + API helper
+    // -----------------
+    const TOKEN_KEY = 'sp_token';
+
+    function getToken(){
+      return localStorage.getItem(TOKEN_KEY);
+    }
+
+    function clearToken(){
+      localStorage.removeItem(TOKEN_KEY);
+    }
+
+    async function adminApi(path, opts={}){
+      const token = getToken();
+      if(!token){
+        document.getElementById('guard').classList.remove('hidden');
+        document.getElementById('app').classList.add('hidden');
+        throw new Error('Belum login');
+      }
+
+      const r = await fetch('/api/admin' + path, {
+        ...opts,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token,
+          ...(opts.headers || {})
+        }
+      });
+
+      if(r.status === 401){
+        clearToken();
+        location.href = 'login.html';
+        return;
+      }
+
+      const data = await r.json().catch(()=> ({}));
+      if(!r.ok) throw new Error(data.detail || 'Request gagal');
+      return data;
+    }
+
+    // show app if token exists
+    (function(){
+      const token = getToken();
+      const guard = document.getElementById('guard');
+      const app = document.getElementById('app');
+      if(!token){
+        guard.classList.remove('hidden');
+        app.classList.add('hidden');
+      } else {
+        app.classList.remove('hidden');
+        guard.classList.add('hidden');
+      }
+    })();
+
+    document.getElementById('btnLogout').addEventListener('click', () => {
+      clearToken();
+      location.href = 'login.html';
+    });
+
+    // -----------------
+    // Tabs
+    // -----------------
+    const tabBtns = [...document.querySelectorAll('.tabBtn')];
+    const panels = [...document.querySelectorAll('.tabPanel')];
+
+    function openTab(name){
+      tabBtns.forEach(b => {
+        const active = b.dataset.tab === name;
+        b.classList.toggle('bg-blue-600', active);
+        b.classList.toggle('text-white', active);
+        b.classList.toggle('text-slate-700', !active);
+      });
+      panels.forEach(p => {
+        p.classList.toggle('hidden', p.id !== 'tab-' + name);
+      });
+
+      // load per tab
+      if(name === 'dashboard') loadDashboard();
+      if(name === 'penyakit') loadPenyakit();
+      if(name === 'gejala') loadGejala();
+      if(name === 'aturan') loadAturanView();
+      if(name === 'histori') loadHistori();
+    }
+
+    tabBtns.forEach(b => b.addEventListener('click', () => openTab(b.dataset.tab)));
+
+    // default
+    openTab('dashboard');
+
+    // -----------------
+    // Dashboard
+    // -----------------
+    async function loadDashboard(){
+      const s = await adminApi('/stats');
+      document.getElementById('statDiseases').textContent = s.total_penyakit ?? 0;
+      document.getElementById('statSymptoms').textContent = s.total_gejala ?? 0;
+      document.getElementById('statHistory').textContent  = s.total_riwayat ?? 0;
+    }
+
+    // Export / Import / Reset
+    document.getElementById('btnExport').addEventListener('click', async () => {
+      const data = await adminApi('/export');
+      const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'backup-sistem-pakar.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    document.getElementById('btnImport').addEventListener('click', () => {
+      document.getElementById('importFile').click();
+    });
+
+    document.getElementById('importFile').addEventListener('change', async (e) => {
+      const f = e.target.files?.[0];
+      if(!f) return;
+      const text = await f.text();
+      const data = JSON.parse(text);
+      await adminApi('/import', {method:'POST', body: JSON.stringify(data)});
+      alert('Import selesai');
+      openTab('dashboard');
+    });
+
+    document.getElementById('btnResetData').addEventListener('click', async () => {
+      if(!confirm('Ini akan mengosongkan data penyakit, gejala, aturan, solusi, dan riwayat. Lanjut?')) return;
+      await adminApi('/reset', {method:'POST'});
+      alert('Data dikosongkan. Jalankan db_init.sql untuk seed lagi.');
+      openTab('dashboard');
+    });
+
+    // -----------------
+    // Penyakit CRUD
+    // -----------------
+    const diseaseForm = document.getElementById('diseaseForm');
+    const diseaseTable = document.getElementById('diseaseTable');
+
+    function showDiseaseForm(show){
+      diseaseForm.classList.toggle('hidden', !show);
+    }
+
+    document.getElementById('btnAddDisease').addEventListener('click', () => {
+      document.getElementById('d_mode').value = 'create';
+      document.getElementById('d_kode').disabled = false;
+      document.getElementById('d_kode').value = '';
+      document.getElementById('d_nama').value = '';
+      document.getElementById('d_pengertian').value = '';
+      document.getElementById('d_penyebab').value = '';
+      showDiseaseForm(true);
+    });
+
+    document.getElementById('btnCancelDisease').addEventListener('click', () => showDiseaseForm(false));
+
+    diseaseForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const mode = document.getElementById('d_mode').value;
+      const payload = {
+        kode: document.getElementById('d_kode').value.trim(),
+        nama: document.getElementById('d_nama').value.trim(),
+        pengertian: document.getElementById('d_pengertian').value.trim(),
+        penyebab: document.getElementById('d_penyebab').value.trim(),
+      };
+
+      if(mode === 'create'){
+        await adminApi('/penyakit', {method:'POST', body: JSON.stringify(payload)});
+      } else {
+        await adminApi('/penyakit/' + encodeURIComponent(payload.kode), {method:'PUT', body: JSON.stringify(payload)});
+      }
+
+      showDiseaseForm(false);
+      await loadPenyakit();
+      await loadDashboard();
+    });
+
+    async function loadPenyakit(){
+      const items = await adminApi('/penyakit');
+      if(!items || items.length === 0){
+        diseaseTable.innerHTML = `<tr><td class="px-4 py-3 text-slate-500" colspan="3">Belum ada data.</td></tr>`;
+        return;
+      }
+
+      diseaseTable.innerHTML = items.map(x => `
+        <tr>
+          <td class="px-4 py-3 font-semibold">${x.kode}</td>
+          <td class="px-4 py-3">${x.nama}</td>
+          <td class="px-4 py-3">
+            <div class="flex flex-wrap gap-2">
+              <button type="button" class="btnEditDisease rounded-xl border px-3 py-1.5 text-xs font-semibold hover:bg-slate-100" data-kode="${x.kode}">Edit</button>
+              <button type="button" class="btnDelDisease rounded-xl border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700 hover:bg-rose-100" data-kode="${x.kode}">Hapus</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+
+      diseaseTable.querySelectorAll('.btnEditDisease').forEach(b => b.addEventListener('click', async () => {
+        const kode = b.dataset.kode;
+        const d = await adminApi('/penyakit/' + encodeURIComponent(kode));
+        document.getElementById('d_mode').value = 'edit';
+        document.getElementById('d_kode').value = d.kode;
+        document.getElementById('d_kode').disabled = true;
+        document.getElementById('d_nama').value = d.nama || '';
+        document.getElementById('d_pengertian').value = d.pengertian || '';
+        document.getElementById('d_penyebab').value = d.penyebab || '';
+        showDiseaseForm(true);
+      }));
+
+      diseaseTable.querySelectorAll('.btnDelDisease').forEach(b => b.addEventListener('click', async () => {
+        const kode = b.dataset.kode;
+        if(!confirm(`Hapus penyakit ${kode}? Ini juga menghapus aturan & solusi terkait.`)) return;
+        await adminApi('/penyakit/' + encodeURIComponent(kode), {method:'DELETE'});
+        await loadPenyakit();
+        await loadDashboard();
+      }));
+    }
+
+    // -----------------
+    // Gejala CRUD
+    // -----------------
+    const symForm = document.getElementById('symForm');
+    const symTable = document.getElementById('symTable');
+
+    function showSymForm(show){
+      symForm.classList.toggle('hidden', !show);
+    }
+
+    document.getElementById('btnAddSymptom').addEventListener('click', () => {
+      document.getElementById('s_mode').value = 'create';
+      document.getElementById('s_kode').disabled = false;
+      document.getElementById('s_kode').value = '';
+      document.getElementById('s_nama').value = '';
+      showSymForm(true);
+    });
+
+    document.getElementById('btnCancelSym').addEventListener('click', () => showSymForm(false));
+
+    symForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const mode = document.getElementById('s_mode').value;
+      const payload = {
+        kode: document.getElementById('s_kode').value.trim(),
+        nama: document.getElementById('s_nama').value.trim(),
+      };
+
+      if(mode === 'create'){
+        await adminApi('/gejala', {method:'POST', body: JSON.stringify(payload)});
+      } else {
+        await adminApi('/gejala/' + encodeURIComponent(payload.kode), {method:'PUT', body: JSON.stringify(payload)});
+      }
+
+      showSymForm(false);
+      await loadGejala();
+      await loadDashboard();
+    });
+
+    async function loadGejala(){
+      const items = await adminApi('/gejala');
+      if(!items || items.length === 0){
+        symTable.innerHTML = `<tr><td class="px-4 py-3 text-slate-500" colspan="3">Belum ada data.</td></tr>`;
+        return;
+      }
+
+      symTable.innerHTML = items.map(x => `
+        <tr>
+          <td class="px-4 py-3 font-semibold">${x.kode}</td>
+          <td class="px-4 py-3">${x.nama}</td>
+          <td class="px-4 py-3">
+            <div class="flex flex-wrap gap-2">
+              <button type="button" class="btnEditSym rounded-xl border px-3 py-1.5 text-xs font-semibold hover:bg-slate-100" data-kode="${x.kode}">Edit</button>
+              <button type="button" class="btnDelSym rounded-xl border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700 hover:bg-rose-100" data-kode="${x.kode}">Hapus</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+
+      symTable.querySelectorAll('.btnEditSym').forEach(b => b.addEventListener('click', async () => {
+        const kode = b.dataset.kode;
+        const d = await adminApi('/gejala/' + encodeURIComponent(kode));
+        document.getElementById('s_mode').value = 'edit';
+        document.getElementById('s_kode').value = d.kode;
+        document.getElementById('s_kode').disabled = true;
+        document.getElementById('s_nama').value = d.nama || '';
+        showSymForm(true);
+      }));
+
+      symTable.querySelectorAll('.btnDelSym').forEach(b => b.addEventListener('click', async () => {
+        const kode = b.dataset.kode;
+        if(!confirm(`Hapus gejala ${kode}?`)) return;
+        await adminApi('/gejala/' + encodeURIComponent(kode), {method:'DELETE'});
+        await loadGejala();
+        await loadDashboard();
+      }));
+    }
+
+    // -----------------
+    // Aturan + Solusi
+    // -----------------
+    const rulesView = document.getElementById('rulesView');
+    const rulesForm = document.getElementById('rulesForm');
+
+    function showRulesForm(show){
+      rulesForm.classList.toggle('hidden', !show);
+    }
+
+    document.getElementById('btnEditRules').addEventListener('click', async () => {
+      showRulesForm(true);
+      await hydrateRulesForm();
+    });
+
+    document.getElementById('btnCancelRules').addEventListener('click', () => showRulesForm(false));
+
+    async function loadAturanView(){
+      const items = await adminApi('/aturan');
+      if(!items || items.length === 0){
+        rulesView.innerHTML = `<div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">Data aturan belum ada.</div>`;
+        return;
+      }
+
+      rulesView.innerHTML = items.map(x => {
+        const gej = (x.gejala || []).map(g => `<span class="inline-flex rounded-xl bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700">${g}</span>`).join(' ');
+        const sol = (x.solusi || []).map(s => `<li class="text-sm">${escapeHtml(s.deskripsi)}</li>`).join('');
+        return `
+          <div class="rounded-2xl border border-slate-200 bg-white p-4">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <div class="text-xs font-semibold text-slate-500">${escapeHtml(x.kode_penyakit || "")}</div>
+                <div class="text-lg font-bold">${escapeHtml(x.nama_penyakit || "")}</div>
+              </div>
+            </div>
+            <div class="mt-3">
+              <div class="text-xs font-semibold text-slate-500">Gejala (aturan)</div>
+              <div class="mt-2 flex flex-wrap gap-2">${gej || '<span class="text-sm text-slate-500">-</span>'}</div>
+            </div>
+            <div class="mt-4">
+              <div class="text-xs font-semibold text-slate-500">Solusi</div>
+              <ul class="mt-2 list-disc pl-5">${sol || '<li class="text-sm text-slate-500">-</li>'}</ul>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function escapeHtml(s){
+      return String(s || '').replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+    }
+
+    async function hydrateRulesForm(){
+      const penyakit = await adminApi('/penyakit');
+      const gejala = await adminApi('/gejala');
+
+      const selP = document.getElementById('r_penyakit');
+      const selG = document.getElementById('r_gejala');
+
+      selP.innerHTML = (penyakit || []).map(p => `<option value="${p.kode}">${p.kode} - ${escapeHtml(p.nama)}</option>`).join('');
+      selG.innerHTML = (gejala || []).map(g => `<option value="${g.kode}">${g.kode} - ${escapeHtml(g.nama)}</option>`).join('');
+
+      if(!selP.value && penyakit?.[0]) selP.value = penyakit[0].kode;
+      await loadRulesToForm(selP.value);
+
+      selP.onchange = () => loadRulesToForm(selP.value);
+    }
+
+    async function loadRulesToForm(kodeP){
+      const data = await adminApi('/aturan/' + encodeURIComponent(kodeP));
+      const selected = new Set((data.gejala || []));
+
+      const selG = document.getElementById('r_gejala');
+      [...selG.options].forEach(o => { o.selected = selected.has(o.value); });
+
+      const solusiLines = (data.solusi || []).map(s => s.deskripsi).filter(Boolean);
+      document.getElementById('r_solusi').value = solusiLines.join('\n');
+    }
+
+    rulesForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const kodeP = document.getElementById('r_penyakit').value;
+      const selG = document.getElementById('r_gejala');
+      const gejala = [...selG.selectedOptions].map(o => o.value);
+
+      const solusi = document.getElementById('r_solusi').value
+        .split(/\r?\n/)
+        .map(s => s.trim())
+        .filter(Boolean);
+
+      await adminApi('/aturan/' + encodeURIComponent(kodeP), {
+        method:'PUT',
+        body: JSON.stringify({ gejala, solusi })
+      });
+
+      showRulesForm(false);
+      await loadAturanView();
+      alert('Aturan & solusi disimpan');
+    });
+
+    // -----------------
+    // Histori
+    // -----------------
+    async function loadHistori(){
+      const h = await adminApi('/riwayat?limit=100');
+      const tbody = document.getElementById('historyTable');
+
+      const items = h.items || [];
+      if(items.length === 0){
+        tbody.innerHTML = `<tr><td class="px-4 py-3 text-slate-500" colspan="6">Belum ada histori diagnosa.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = items.map(x => `
+        <tr>
+          <td class="px-4 py-3">${escapeHtml(x.created_at || '-')}</td>
+          <td class="px-4 py-3">${escapeHtml(x.nama || '-')}</td>
+          <td class="px-4 py-3">${x.umur ?? '-'}</td>
+          <td class="px-4 py-3">${escapeHtml(x.jk || '-')}</td>
+          <td class="px-4 py-3">${escapeHtml(x.nama_penyakit || '-')}${x.kode_penyakit ? ` <span class="text-xs text-slate-500">(${x.kode_penyakit})</span>` : ''}</td>
+          <td class="px-4 py-3">${escapeHtml(x.status || '-')}</td>
+        </tr>
+      `).join('');
+    }
+
+    // (tab default sudah memanggil loadDashboard via openTab)
+  </script>
+</body>
+</html>

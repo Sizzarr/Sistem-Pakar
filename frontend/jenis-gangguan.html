@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jenis Gangguan | Sistem Pakar Diagnosa Tidur</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <meta name="description" content="Informasi gangguan tidur: pengertian, penyebab, dan solusi." />
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-800">
+
+  <header class="sticky top-0 z-40 border-b bg-white/80 backdrop-blur">
+    <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
+      <a href="index.html" class="flex items-center gap-2 font-semibold">
+        <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-white">SP</span>
+        <span class="leading-tight">
+          <span class="block text-sm text-slate-500">Sistem Pakar</span>
+          <span class="block">Diagnosa Tidur</span>
+        </span>
+      </a>
+
+      <nav class="hidden items-center gap-1 md:flex">
+        <a data-nav="index.html" href="index.html" class="navlink rounded-xl px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900">Home</a>
+        <a data-nav="diagnosa.html" href="diagnosa.html" class="navlink rounded-xl px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900">Diagnosa</a>
+        <a data-nav="jenis-gangguan.html" href="jenis-gangguan.html" class="navlink rounded-xl px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900">Jenis Gangguan</a>
+        <a data-nav="login.html" href="login.html" class="navlink rounded-xl px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900">Login</a>
+      </nav>
+
+      <button id="btnMenu" class="md:hidden inline-flex items-center justify-center rounded-xl border px-3 py-2 text-sm font-medium hover:bg-slate-100">
+        Menu
+      </button>
+    </div>
+
+    <div id="mobileMenu" class="md:hidden hidden border-t bg-white">
+      <div class="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-3">
+        <a data-nav="index.html" href="index.html" class="navlink rounded-xl px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">Home</a>
+        <a data-nav="diagnosa.html" href="diagnosa.html" class="navlink rounded-xl px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">Diagnosa</a>
+        <a data-nav="jenis-gangguan.html" href="jenis-gangguan.html" class="navlink rounded-xl px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">Jenis Gangguan</a>
+        <a data-nav="login.html" href="login.html" class="navlink rounded-xl px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">Login</a>
+      </div>
+    </div>
+  </header>
+
+  <script>
+    (function(){
+      const btn = document.getElementById('btnMenu');
+      const menu = document.getElementById('mobileMenu');
+      if(btn && menu){
+        btn.addEventListener('click', () => menu.classList.toggle('hidden'));
+      }
+
+      const path = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
+      document.querySelectorAll('.navlink').forEach(a => {
+        const target = (a.getAttribute('data-nav') || '').toLowerCase();
+        if(target === path){
+          a.classList.add('bg-blue-600','text-white','hover:bg-blue-600','hover:text-white');
+          a.classList.remove('text-slate-600','text-slate-700');
+        }
+      });
+    })();
+  </script>
+
+  <main class="mx-auto max-w-6xl px-4 py-10">
+    <section class="rounded-3xl border bg-white p-6 shadow-sm">
+      <h1 class="text-2xl font-bold text-slate-900">Jenis Gangguan Tidur</h1>
+      <p class="mt-2 text-sm text-slate-600">
+        Klik nama gangguan untuk melihat pengertian, penyebab, dan solusi. Detail tampil di bawah (bukan pop-up), jadi kamu bisa scroll seperti manusia normal.
+      </p>
+
+      <div id="list" class="mt-6 space-y-3">
+        <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">Memuat data...</div>
+      </div>
+
+      <p id="err" class="mt-4 hidden text-sm text-rose-700"></p>
+    </section>
+  </main>
+
+  <script>
+    const listEl = document.getElementById('list');
+    const errEl = document.getElementById('err');
+
+    function splitLines(text){
+      return String(text || '')
+        .split(/\r?\n/)
+        .map(s => s.trim())
+        .filter(Boolean);
+    }
+
+    function li(text){
+      const safe = (text || '').replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+      return `<li>${safe}</li>`;
+    }
+
+    function renderCard(item){
+      return `
+        <details class="group rounded-2xl border border-slate-200 bg-white p-4 shadow-sm" data-kode="${item.kode}">
+          <summary class="list-none cursor-pointer select-none">
+            <div class="flex items-center justify-between gap-3">
+              <div>
+                <div class="text-xs font-semibold text-slate-500">${item.kode}</div>
+                <div class="text-lg font-bold text-slate-900">${item.nama}</div>
+              </div>
+              <div class="shrink-0 text-sm font-semibold">
+                <span class="text-blue-600 group-open:hidden">Lihat detail</span>
+                <span class="hidden text-slate-500 group-open:inline">Tutup</span>
+              </div>
+            </div>
+          </summary>
+
+          <div class="mt-4 border-t border-slate-200 pt-4">
+            <div class="text-sm text-slate-600">Memuat detail...</div>
+          </div>
+        </details>
+      `;
+    }
+
+    async function api(path){
+      const r = await fetch(path);
+      const data = await r.json().catch(() => ({}));
+      if(!r.ok) throw new Error(data.detail || 'Request gagal');
+      return data;
+    }
+
+    async function loadList(){
+      errEl.classList.add('hidden');
+      try{
+        const items = await api('/api/penyakit');
+        if(!items || items.length === 0){
+          listEl.innerHTML = `<div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">Data gangguan belum ada.</div>`;
+          return;
+        }
+        listEl.innerHTML = items.map(renderCard).join('');
+
+        // Lazy load detail saat dibuka
+        listEl.querySelectorAll('details[data-kode]').forEach(det => {
+          det.addEventListener('toggle', async () => {
+            if(!det.open) return;
+            if(det.dataset.loaded === '1') return;
+
+            const kode = det.getAttribute('data-kode');
+            const body = det.querySelector('div.mt-4');
+            try{
+              const d = await api(`/api/penyakit/${kode}`);
+
+              const causes = splitLines(d.penyebab);
+              const sols = (d.solusi || []).map(s => s.deskripsi).filter(Boolean);
+
+              body.innerHTML = `
+                <div class="grid gap-4 md:grid-cols-2">
+                  <div class="md:col-span-2">
+                    <div class="text-sm font-bold text-slate-900">Pengertian</div>
+                    <p class="mt-1 text-sm text-slate-700">${(d.pengertian || '-').replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]))}</p>
+                  </div>
+                  <div>
+                    <div class="text-sm font-bold text-slate-900">Penyebab</div>
+                    ${causes.length ? `<ul class="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">${causes.map(li).join('')}</ul>` : `<p class="mt-1 text-sm text-slate-700">-</p>`}
+                  </div>
+                  <div>
+                    <div class="text-sm font-bold text-slate-900">Solusi</div>
+                    ${sols.length ? `<ul class="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">${sols.map(li).join('')}</ul>` : `<p class="mt-1 text-sm text-slate-700">-</p>`}
+                  </div>
+                </div>
+              `;
+
+              det.dataset.loaded = '1';
+            } catch(e){
+              body.innerHTML = `<div class="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">Gagal memuat detail: ${String(e.message || e)}</div>`;
+            }
+          });
+        });
+
+      } catch(e){
+        errEl.textContent = String(e.message || e);
+        errEl.classList.remove('hidden');
+        listEl.innerHTML = `<div class="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">Gagal memuat data.</div>`;
+      }
+    }
+
+    loadList();
+  </script>
+
+  <footer class="mt-16 border-t bg-white">
+    <div class="mx-auto max-w-6xl px-4 py-8">
+      <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <p class="text-sm text-slate-500">© <span id="year"></span> Sistem Pakar Diagnosa Tidur</p>
+      </div>
+    </div>
+    <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+  </footer>
+</body>
+</html>
