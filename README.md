@@ -37,7 +37,7 @@ Buka:
 - Website: http://127.0.0.1:8000
 - Docs API: http://127.0.0.1:8000/docs
 
-## 3) Alur Diagnosa (sesuai permintaan kamu)
+## 3) Alur Diagnosa 
 1. Halaman diagnosa cuma tampil biodata.
 2. Setelah biodata diisi, muncul pilihan penyakit yang mau dicek.
 3. Sistem menanyakan gejala satu per satu (Ya/Tidak) sesuai aturan penyakit itu.
