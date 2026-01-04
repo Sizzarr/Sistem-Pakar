@@ -1,3 +1,0 @@
--- Tables auto-created by SQLAlchemy at startup.
--- Buat DB dulu:
--- CREATE DATABASE sistem_pakar_tidur CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
