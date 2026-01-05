@@ -1,0 +1,54 @@
+services:
+  # MySQL Database
+  db:
+    image: mysql:8.0
+    container_name: sistem-pakar-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root123}
+      MYSQL_DATABASE: ${DB_NAME:-sistem_pakar_tidur}
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./db_init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "3307:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - sistem-pakar-network
+
+  # FastAPI Backend + Frontend
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sistem-pakar-app
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME:-sistem_pakar_tidur}
+      DB_USER: ${DB_USER:-root}
+      DB_PASSWORD: ${DB_PASSWORD:-root123}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
+      JWT_SECRET: ${JWT_SECRET:-ubah-ini-di-production}
+      JWT_EXPIRE_MINUTES: ${JWT_EXPIRE_MINUTES:-720}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - sistem-pakar-network
+
+volumes:
+  mysql_data:
+
+networks:
+  sistem-pakar-network:
+    driver: bridge
