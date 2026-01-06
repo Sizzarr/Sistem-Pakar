@@ -74,7 +74,7 @@
           <h1 class="text-xl font-bold">Diagnosa Gangguan Tidur</h1>
           <p class="mt-1 text-sm text-slate-600">Isi biodata dulu, baru pilih penyakit yang mau dicek. Biar runtut, tidak kayak hidup.</p>
         </div>
-        <button id="btnResetAll" class="rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold hover:bg-slate-100">Reset</button>
+        <button id="btnResetAll" class="hidden rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold hover:bg-slate-100">selesai</button>
       </div>
 
       <!-- STEP 1: Biodata -->
@@ -108,6 +108,7 @@
 
           <div class="flex flex-wrap items-center gap-3">
             <button class="rounded-2xl bg-blue-600 px-5 py-3 text-sm font-bold text-white hover:bg-blue-500" type="submit">Lanjut</button>
+            <button id="btnResetBio" type="button" class="rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-bold hover:bg-slate-100">Reset</button>
             <span id="bioMsg" class="hidden text-sm font-semibold text-emerald-700">Biodata tersimpan.</span>
           </div>
         </form>
@@ -236,6 +237,12 @@
     show(stepPilih, step==='pilih');
     show(stepTanya, step==='tanya');
     show(stepHasil, step==='hasil');
+
+    // Tombol "selesai" hanya muncul saat hasil diagnosa
+    const btnResetAll = document.getElementById('btnResetAll');
+    if(btnResetAll){
+      btnResetAll.classList.toggle('hidden', step !== 'hasil');
+    }
   }
 
   // State
@@ -287,6 +294,19 @@
     // lanjut ke pilih penyakit
     await muatPenyakit();
     only('pilih');
+  });
+
+  // Reset biodata (cuma di step bio)
+  document.getElementById('btnResetBio')?.addEventListener('click', () => {
+    biodata = null;
+    sesiId = null;
+    penyakitDipilih = null;
+    jawaban = [];
+
+    document.getElementById('bioForm').reset();
+    document.getElementById('bioMsg').classList.add('hidden');
+    renderJawabanTerakhir();
+    only('bio');
   });
 
   // Kembali ke bio
@@ -400,7 +420,7 @@
     only('pilih');
   });
 
-  // reset all
+  // reset all (tombol "selesai" muncul hanya di step hasil)
   document.getElementById('btnResetAll')?.addEventListener('click', async () => {
     biodata = null;
     sesiId = null;
